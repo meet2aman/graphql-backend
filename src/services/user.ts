@@ -29,11 +29,10 @@ export class UserService {
     });
     return user;
   }
-  private static getUserById(id: string) {
+  public static getUserById(id: string) {
     const user = primsaClient.user.findUnique({
       where: { id },
     });
-    if (!user) throw new Error(`User not found`);
     return user;
   }
   public static createUser(payload: CreateUserPayload) {
@@ -74,5 +73,13 @@ export class UserService {
       process.env.JWT_SECRET!
     );
     return token;
+  }
+  public static async decodeJWTToken(token: string) {
+    try {
+      return JWT.verify(token, process.env.JWT_SECRET!);
+    } catch (error) {
+      // return { error: "Invalid JWT token" };
+      throw new Error("Invalid JWT token");
+    }
   }
 }

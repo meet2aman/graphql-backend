@@ -4,6 +4,8 @@ import "dotenv/config";
 import cors from "cors";
 import { expressMiddleware } from "@apollo/server/express4";
 import ApolloGQLServer from "./graphql";
+import { UserService } from "./services/user";
+import { JwtPayload } from "jsonwebtoken";
 
 async function init() {
   const app = express();
@@ -16,7 +18,21 @@ async function init() {
     });
   });
   // graphql server middleware
-  app.use("/graphql", expressMiddleware(await ApolloGQLServer()));
+  app.use(
+    "/graphql",
+    expressMiddleware(await ApolloGQLServer(), {
+      context: async ({ req }) => {
+        const token = req.headers["token"];
+        if (!token) throw new Error("Token not found !");
+        try {
+          const result = await UserService.decodeJWTToken(token as string);
+          return result;
+        } catch (error: any) {
+          return {};
+        }
+      },
+    })
+  );
 
   app.listen(process.env.PORT, () => {
     console.log(`Server Started on port ${process.env.PORT}`);

@@ -11,12 +11,18 @@ const queries = {
     });
     return token;
   },
-  getCurrentLoggedInUser: async () => {},
+  getCurrentLoggedInUser: async (_: any, parameters: any, context: any) => {
+    if (context && context.id) {
+      const user = await UserService.getUserById(context.id);
+      if (!user) throw new Error(`User not found`);
+      return user;
+    }
+    throw new Error(`Invalid token`);
+  },
 };
 const mutations = {
   createUser: async (_: any, payload: CreateUserPayload) => {
     const result = await UserService.createUser(payload);
-    console.log(result);
     return result.id;
   },
 };
