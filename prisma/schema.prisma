@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String     @id @default(uuid())
+  firstName       String     @map("first_name")
+  lastName        String?     @map("last_name")
+  age             Int
+  email           String     @unique
+  password        String
+  salt            String
+  profileImageURL String?     @map("profile_image_url")
+  posts           Post[]
+  likes           Like[]
+  comments        Comment[]
+  bookmarks       Bookmark[]
+
+  @@map("users")
+}
+
+model Post {
+  id           String     @id @default(uuid())
+  title        String
+  content      String
+  postImageURL String?     @map("post_image_url")
+  author       User       @relation(fields: [authorId], references: [id])
+  authorId     String
+  likes        Like[]
+  comments     Comment[]
+  bookmarks    Bookmark[]
+
+  @@map("posts")
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@map("likes")
+}
+
+model Comment {
+  id        String    @id @default(uuid())
+  content   String
+  post      Post      @relation(fields: [postId], references: [id])
+  postId    String
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String
+  parentId  String? // For nested comments (if any)
+  parent    Comment?  @relation("ChildToParent", fields: [parentId], references: [id])
+  replies   Comment[] @relation("ChildToParent")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("comments")
+}
+
+model Bookmark {
+  id        String   @id @default(uuid())
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@map("bookmarks")
+}
