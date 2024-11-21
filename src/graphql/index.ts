@@ -5,6 +5,8 @@ import { Post } from "./post";
 export default async function ApolloGQLServer() {
   const gqlServer = new ApolloServer({
     typeDefs: `#graphql
+    ${User.typeDefs}
+    ${Post.typeDefs}
     type Query {
       ${User.queries}
       ${Post.queries}
